@@ -1,0 +1,108 @@
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Spring Boot
+*.log
+*.log.*
+application-local.yml
+application-dev.yml
+
+# Database
+*.db
+*.sqlite
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Node.js (for frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+
+# React
+.cache/
+*.tsbuildinfo
+coverage/
+
+# Python (for AI service)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Docker
+*.dockerignore
+docker-compose.override.yml
+
+# AWS
+.aws/
+*.pem
+
+# Secrets
+secrets/
+credentials/
+*.key
+*.crt
+*.p12
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# Personal documentation (not for public repo)
+🧭 Project Specification.ini
+PROGRESS.md
+SUCCESS_SUMMARY.md
+DATABASE_ACCESS.md
+UNDERSTANDING_YOUR_APP.md
+KNOWLEDGE_TRANSFER.md
+test_api.sh
