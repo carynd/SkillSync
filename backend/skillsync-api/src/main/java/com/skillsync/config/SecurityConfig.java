@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/register", "/api/users/login").permitAll()
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/api/jobs/**").permitAll()  // Job market data is public
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
