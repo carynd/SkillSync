@@ -19,4 +19,6 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     Optional<Recommendation> findLatestByUserId(@Param("userId") UUID userId);
 
     void deleteByExpiresAtBefore(LocalDateTime now);
+
+    void deleteByUserId(UUID userId);
 }

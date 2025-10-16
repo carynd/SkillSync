@@ -30,10 +30,13 @@ public class Recommendation {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "target_role")
+    private String targetRole;
+
     @Column(name = "missing_skills", columnDefinition = "TEXT[]")
     private List<String> missingSkills;
 
-    @Column(name = "resources", columnDefinition = "jsonb")
+    @Column(name = "resources", columnDefinition = "TEXT")
     private String resources; // JSON string containing resource links
 
     @Column(name = "skill_gap_percentage")
