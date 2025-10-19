@@ -1,0 +1,18 @@
+{
+  "user_profile": {
+    "user_id": "test-123",
+    "name": "John Doe",
+    "current_role": "Junior Developer",
+    "target_role": "Senior Full Stack Developer",
+    "current_skills": ["JavaScript", "React", "HTML", "CSS"],
+    "experience_years": 2
+  },
+  "skill_gap": {
+    "skill_gap_percentage": 60.0,
+    "alignment_score": 40.0,
+    "missing_skills": ["Node.js", "TypeScript", "Docker", "PostgreSQL", "AWS"],
+    "matching_skills_count": 4,
+    "missing_skills_count": 5
+  },
+  "question": "What should I focus on first to become a Senior Full Stack Developer?"
+}

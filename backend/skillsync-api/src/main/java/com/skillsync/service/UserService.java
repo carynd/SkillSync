@@ -46,7 +46,7 @@ public class UserService {
                 .currentRole(request.getCurrentRole())
                 .targetRole(request.getTargetRole())
                 .skills(request.getSkills())
-                .experience(request.getExperience())
+                .experienceLevel(request.getExperienceLevel())
                 .goals(request.getGoals())
                 .githubUsername(request.getGithubUsername())
                 .isActive(true)
@@ -101,13 +101,16 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updateUser(UUID userId, UserRegistrationRequest request) {
+    public UserResponse updateUser(UUID userId, UserUpdateRequest request) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         // Update user fields
         if (request.getName() != null) {
             user.setName(request.getName());
+        }
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
         }
         if (request.getCurrentRole() != null) {
             user.setCurrentRole(request.getCurrentRole());
@@ -118,8 +121,8 @@ public class UserService {
         if (request.getSkills() != null) {
             user.setSkills(request.getSkills());
         }
-        if (request.getExperience() != null) {
-            user.setExperience(request.getExperience());
+        if (request.getExperienceLevel() != null) {
+            user.setExperienceLevel(request.getExperienceLevel());
         }
         if (request.getGoals() != null) {
             user.setGoals(request.getGoals());
@@ -140,7 +143,7 @@ public class UserService {
                 .currentRole(user.getCurrentRole())
                 .targetRole(user.getTargetRole())
                 .skills(user.getSkills())
-                .experience(user.getExperience())
+                .experienceLevel(user.getExperienceLevel())
                 .goals(user.getGoals())
                 .githubUsername(user.getGithubUsername())
                 .createdAt(user.getCreatedAt())

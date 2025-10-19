@@ -86,22 +86,22 @@
 ### 2. Data Model
 
 ```
-┌──────────────────┐
-│      User        │
-├──────────────────┤
-│ user_id (PK)     │
-│ name             │
-│ email (unique)   │
-│ password         │
-│ current_role     │
-│ target_role      │
-│ skills[]         │
-│ experience       │
-│ goals            │
-│ github_username  │
-│ created_at       │
-│ updated_at       │
-└────────┬─────────┘
+┌──────────────────────────┐
+│          User            │
+├──────────────────────────┤
+│ user_id (PK)             │
+│ name                     │
+│ email (unique)           │
+│ password                 │
+│ current_role             │
+│ target_role              │
+│ skills[]                 │  ← Array (150+ predefined options)
+│ experience_level         │  ← ENUM: BEGINNER/INTERMEDIATE/ADVANCED/EXPERT
+│ goals                    │
+│ github_username          │
+│ created_at               │
+│ updated_at               │
+└────────┬─────────────────┘
          │
          │ 1:N
          │
@@ -282,5 +282,29 @@
 
 ---
 
-**Status**: Core architecture implemented ✅
-**Next**: Job Intelligence Service & Recommendation Engine 🚧
+## Recent Updates (October 2025)
+
+### Enum Implementation
+- ✅ `ExperienceLevel` enum replaces integer experience field
+- ✅ Predefined skills list (150+ skills) with multi-select UI
+- ✅ Industry-standard data validation
+- ✅ Consistent data models across frontend and backend
+
+### Recommendations Engine
+- ✅ Automatic generation with intelligent fallback
+- ✅ 24-hour caching in PostgreSQL
+- ✅ Priority-based skill recommendations
+- ✅ Skill gap analysis and alignment scoring
+
+### AI Integration
+- ✅ FastAPI microservice for AI insights (Port 8001)
+- ✅ OpenAI GPT-4 integration for career advice
+- ✅ Fallback mode for development without API key
+- ✅ Context-aware recommendations
+
+### Data Sources
+- ✅ Mock Data Service (active in dev mode)
+- 🚧 Real API integrations planned (RapidAPI, LinkedIn, GitHub Jobs)
+
+**Status**: Phase 2 Complete ✅
+**Next**: Real API Integration & Production Deployment 🚧

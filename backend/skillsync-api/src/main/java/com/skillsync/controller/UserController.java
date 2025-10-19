@@ -1,5 +1,6 @@
 package com.skillsync.controller;
 
+import com.skillsync.constants.SkillsConstants;
 import com.skillsync.dto.*;
 import com.skillsync.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -45,8 +47,14 @@ public class UserController {
     @Operation(summary = "Update user profile", description = "Updates user profile information")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable UUID userId,
-            @Valid @RequestBody UserRegistrationRequest request) {
+            @Valid @RequestBody UserUpdateRequest request) {
         UserResponse response = userService.updateUser(userId, request);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/skills")
+    @Operation(summary = "Get all available skills", description = "Returns list of all predefined skills")
+    public ResponseEntity<List<String>> getAllSkills() {
+        return ResponseEntity.ok(SkillsConstants.ALL_SKILLS);
     }
 }

@@ -1,5 +1,6 @@
 package com.skillsync.dto;
 
+import com.skillsync.enums.ExperienceLevel;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -33,7 +34,7 @@ public class UserRegistrationRequest {
 
     private List<String> skills;
 
-    private Integer experience;
+    private ExperienceLevel experienceLevel;
 
     private String goals;
 

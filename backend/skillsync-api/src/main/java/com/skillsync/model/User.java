@@ -1,5 +1,6 @@
 package com.skillsync.model;
 
+import com.skillsync.enums.ExperienceLevel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,7 +48,9 @@ public class User {
     @Column(columnDefinition = "TEXT[]")
     private List<String> skills;
 
-    private Integer experience;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "experience_level")
+    private ExperienceLevel experienceLevel;
 
     @Column(columnDefinition = "TEXT")
     private String goals;

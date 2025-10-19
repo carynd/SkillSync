@@ -44,13 +44,24 @@ public class AIInsightsService {
         var recommendation = recommendationService.getRecommendations(userId);
 
         // Build request
+        // Convert ExperienceLevel enum to years for AI service
+        int experienceYears = 0;
+        if (user.getExperienceLevel() != null) {
+            switch (user.getExperienceLevel()) {
+                case BEGINNER: experienceYears = 1; break;
+                case INTERMEDIATE: experienceYears = 4; break;
+                case ADVANCED: experienceYears = 8; break;
+                case EXPERT: experienceYears = 12; break;
+            }
+        }
+
         UserProfileRequest userProfile = UserProfileRequest.builder()
                 .userId(userId.toString())
                 .name(user.getName())
                 .currentRole(user.getCurrentRole() != null ? user.getCurrentRole() : "Developer")
                 .targetRole(recommendation.getTargetRole())
                 .currentSkills(user.getSkills() != null ? user.getSkills() : new ArrayList<>())
-                .experienceYears(user.getExperience() != null ? user.getExperience() : 0)
+                .experienceYears(experienceYears)
                 .build();
 
         // Extract missing skills from recommendations
