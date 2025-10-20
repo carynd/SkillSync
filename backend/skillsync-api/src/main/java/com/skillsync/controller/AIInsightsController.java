@@ -33,7 +33,11 @@ public class AIInsightsController {
 
         return aiInsightsService.getCareerAdvice(userId, question)
                 .map(ResponseEntity::ok)
-                .onErrorReturn(ResponseEntity.internalServerError().build());
+                .doOnError(error -> log.error("Error getting AI advice for user {}: {}", userId, error.getMessage(), error))
+                .onErrorResume(error -> {
+                    log.error("Failed to get AI advice: {}", error.getMessage());
+                    return Mono.just(ResponseEntity.internalServerError().build());
+                });
     }
 
     /**

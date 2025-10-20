@@ -31,6 +31,9 @@ public class UserService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private RecommendationService recommendationService;
+
     @Transactional
     public AuthResponse registerUser(UserRegistrationRequest request) {
         // Check if user already exists
@@ -105,6 +108,10 @@ public class UserService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
+        // Track if target role or skills changed (need to regenerate recommendations)
+        boolean targetRoleChanged = false;
+        boolean skillsChanged = false;
+
         // Update user fields
         if (request.getName() != null) {
             user.setName(request.getName());
@@ -115,11 +122,13 @@ public class UserService {
         if (request.getCurrentRole() != null) {
             user.setCurrentRole(request.getCurrentRole());
         }
-        if (request.getTargetRole() != null) {
+        if (request.getTargetRole() != null && !request.getTargetRole().equals(user.getTargetRole())) {
             user.setTargetRole(request.getTargetRole());
+            targetRoleChanged = true;
         }
         if (request.getSkills() != null) {
             user.setSkills(request.getSkills());
+            skillsChanged = true;
         }
         if (request.getExperienceLevel() != null) {
             user.setExperienceLevel(request.getExperienceLevel());
@@ -132,6 +141,20 @@ public class UserService {
         }
 
         User updatedUser = userRepository.save(user);
+
+        // Auto-generate recommendations if target role or skills changed
+        if (targetRoleChanged || skillsChanged) {
+            try {
+                // Clear old recommendations
+                recommendationService.clearRecommendations(userId);
+                // Generate new recommendations
+                recommendationService.generateRecommendations(userId);
+            } catch (Exception e) {
+                // Log error but don't fail the update
+                // User can manually generate recommendations later
+            }
+        }
+
         return mapToUserResponse(updatedUser);
     }
 

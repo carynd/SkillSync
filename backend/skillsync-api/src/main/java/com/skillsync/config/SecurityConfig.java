@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/jobs/**").permitAll()  // Job market data is public
+                        .requestMatchers("/api/ai/**").permitAll()  // AI insights are accessible to authenticated users
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
