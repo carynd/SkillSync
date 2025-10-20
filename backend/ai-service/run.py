@@ -11,7 +11,7 @@ if __name__ == "__main__":
     print("=" * 60)
     print(f"Host: {settings.service_host}")
     print(f"Port: {settings.service_port}")
-    print(f"OpenAI Configured: {bool(settings.openai_api_key)}")
+    print(f"Gemini Configured: {bool(settings.gemini_api_key)}")
     print(f"Backend URL: {settings.backend_url}")
     print("=" * 60)
     print("\n📚 API Documentation will be available at:")

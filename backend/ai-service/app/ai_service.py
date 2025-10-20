@@ -1,4 +1,4 @@
-from openai import OpenAI
+import google.generativeai as genai
 from typing import Dict, List
 from app.config import settings
 from app.models import CareerAdviceRequest, CareerAdviceResponse
@@ -9,20 +9,21 @@ logger = logging.getLogger(__name__)
 
 
 class AIInsightsService:
-    """Service for generating AI-powered career insights using OpenAI"""
+    """Service for generating AI-powered career insights using Google Gemini"""
 
     def __init__(self):
-        if settings.openai_api_key:
-            self.client = OpenAI(api_key=settings.openai_api_key)
+        if settings.gemini_api_key:
+            genai.configure(api_key=settings.gemini_api_key)
+            self.model = genai.GenerativeModel('gemini-2.5-flash')
             self.configured = True
-            logger.info("OpenAI API configured successfully")
+            logger.info("Google Gemini API configured successfully")
         else:
-            self.client = None
+            self.model = None
             self.configured = False
-            logger.warning("OpenAI API key not configured - using mock responses")
+            logger.warning("Gemini API key not configured - using mock responses")
 
     def generate_career_advice(self, request: CareerAdviceRequest) -> CareerAdviceResponse:
-        """Generate personalized career advice using GPT-4"""
+        """Generate personalized career advice using Google Gemini"""
 
         if not self.configured:
             return self._generate_mock_advice(request)
@@ -31,27 +32,47 @@ class AIInsightsService:
             # Build context from user profile and skill gap
             context = self._build_context(request)
 
-            # Create prompt for GPT-4
-            prompt = self._create_prompt(context, request.question)
+            # Create simplified prompt for Gemini (complex prompts trigger safety filters)
+            full_prompt = f"""You are a helpful career advisor for technology professionals.
 
-            # Call OpenAI API
-            response = self.client.chat.completions.create(
-                model="gpt-4",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": self._get_system_prompt()
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                temperature=0.7,
-                max_tokens=1000
+{request.user_profile.name} is a {context['current_role']} with {context['experience']} years of experience.
+Goal: Become a {context['target_role']}
+Current skills: {', '.join(context['current_skills'][:8])}
+Skills to learn: {', '.join(context['missing_skills'][:5])}
+
+Question: {request.question}
+
+Provide practical career advice with:
+1. Main recommendation
+2. Reasoning
+3. 3-5 action steps
+4. Timeline estimate"""
+
+            # Call Gemini API with relaxed safety settings
+            from google.generativeai.types import HarmCategory, HarmBlockThreshold
+
+            safety_settings = {
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE
+            }
+
+            response = self.model.generate_content(
+                full_prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.7,
+                    max_output_tokens=1000,
+                ),
+                safety_settings=safety_settings
             )
 
-            advice_text = response.choices[0].message.content
+            # Extract text from response
+            if response.parts:
+                advice_text = response.text
+            else:
+                logger.warning(f"Gemini response has no parts. Finish reason: {response.candidates[0].finish_reason if response.candidates else 'unknown'}")
+                return self._generate_fallback_advice(request)
 
             # Parse the response
             parsed = self._parse_ai_response(advice_text)
@@ -61,7 +82,7 @@ class AIInsightsService:
                 reasoning=parsed["reasoning"],
                 action_items=parsed["action_items"],
                 estimated_timeline=parsed.get("timeline"),
-                confidence_score=0.85,  # Could be enhanced with confidence analysis
+                confidence_score=0.85,
                 generated_at=datetime.now()
             )
 
@@ -108,21 +129,16 @@ Format your response with:
     def _create_prompt(self, context: Dict, question: str) -> str:
         """Create the user prompt"""
         return f"""
-User Profile:
-- Name: {context['name']}
-- Current Role: {context['current_role']} ({context['experience']} years experience)
-- Target Role: {context['target_role']}
-- Current Skills: {', '.join(context['current_skills'])}
+Career Profile:
+- Current Position: {context['current_role']} with {context['experience']} years experience
+- Career Goal: {context['target_role']}
+- Existing Skills: {', '.join(context['current_skills'][:10])}
+- Skills to Learn: {', '.join(context['missing_skills'][:5])}
+- Progress: {context['alignment']:.0f}% aligned with goal
 
-Skill Gap Analysis:
-- Alignment Score: {context['alignment']:.1f}%
-- Skill Gap: {context['skill_gap']:.1f}%
-- Skills Matched: {context['matching_count']}
-- Missing Skills: {', '.join(context['missing_skills'][:5])}{'...' if len(context['missing_skills']) > 5 else ''}
+Question: {question}
 
-User Question: {question}
-
-Please provide detailed career advice addressing their question.
+Please provide practical career development advice with specific action steps and estimated timeline.
 """
 
     def _parse_ai_response(self, response_text: str) -> Dict:

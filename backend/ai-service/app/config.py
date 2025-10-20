@@ -5,7 +5,7 @@ from typing import Optional
 class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
 
-    openai_api_key: str = ""
+    gemini_api_key: str = ""
     service_port: int = 8001
     service_host: str = "0.0.0.0"
     backend_url: str = "http://localhost:8080"

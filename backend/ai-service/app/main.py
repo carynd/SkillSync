@@ -63,8 +63,8 @@ async def get_career_advice(request: CareerAdviceRequest):
     """
     Generate AI-powered career advice based on user profile and skill gap.
 
-    This endpoint uses GPT-4 to provide personalized career guidance.
-    If OpenAI is not configured, it returns smart mock advice.
+    This endpoint uses Google Gemini to provide personalized career guidance.
+    If Gemini is not configured, it returns smart mock advice.
     """
     try:
         logger.info(f"Generating career advice for user: {request.user_profile.name}")
