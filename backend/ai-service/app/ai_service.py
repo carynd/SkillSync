@@ -32,23 +32,27 @@ class AIInsightsService:
             # Build context from user profile and skill gap
             context = self._build_context(request)
 
-            # Create simplified prompt for Gemini (complex prompts trigger safety filters)
-            full_prompt = f"""You are a helpful career advisor for technology professionals.
+            # Create JSON-structured prompt (works better with Gemini)
+            full_prompt = f"""You are a professional career development advisor. Analyze this profile and provide specific guidance.
 
-{request.user_profile.name} is a {context['current_role']} with {context['experience']} years of experience.
-Goal: Become a {context['target_role']}
-Current skills: {', '.join(context['current_skills'][:8])}
-Skills to learn: {', '.join(context['missing_skills'][:5])}
+PROFILE:
+Name: {request.user_profile.name}
+Current: {context['current_role']} ({context['experience']} years experience)
+Target: {context['target_role']}
+Has skills: {', '.join(context['current_skills'][:8])}
+Needs skills: {', '.join(context['missing_skills'][:5])}
 
 Question: {request.question}
 
-Provide practical career advice with:
-1. Main recommendation
-2. Reasoning
-3. 3-5 action steps
-4. Timeline estimate"""
+Provide JSON response:
+{{
+  "advice": "concise main recommendation",
+  "reasoning": "explanation why this matters",
+  "action_items": ["actionable step 1", "actionable step 2", "actionable step 3", "actionable step 4", "actionable step 5"],
+  "timeline": "realistic timeframe"
+}}"""
 
-            # Call Gemini API with relaxed safety settings
+            # Call Gemini API with safety settings
             from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
             safety_settings = {
@@ -63,6 +67,7 @@ Provide practical career advice with:
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.7,
                     max_output_tokens=1000,
+                    response_mime_type="application/json",
                 ),
                 safety_settings=safety_settings
             )
@@ -74,13 +79,19 @@ Provide practical career advice with:
                 logger.warning(f"Gemini response has no parts. Finish reason: {response.candidates[0].finish_reason if response.candidates else 'unknown'}")
                 return self._generate_fallback_advice(request)
 
-            # Parse the response
-            parsed = self._parse_ai_response(advice_text)
+            # Parse JSON response
+            import json
+            try:
+                parsed = json.loads(advice_text)
+            except json.JSONDecodeError:
+                # Fallback to text parsing if JSON fails
+                logger.warning("Failed to parse JSON response, using text parser")
+                parsed = self._parse_ai_response(advice_text)
 
             return CareerAdviceResponse(
-                advice=parsed["advice"],
-                reasoning=parsed["reasoning"],
-                action_items=parsed["action_items"],
+                advice=parsed.get("advice", ""),
+                reasoning=parsed.get("reasoning", ""),
+                action_items=parsed.get("action_items", []),
                 estimated_timeline=parsed.get("timeline"),
                 confidence_score=0.85,
                 generated_at=datetime.now()
