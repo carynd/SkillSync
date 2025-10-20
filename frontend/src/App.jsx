@@ -4,10 +4,11 @@ import Login from './components/Login'
 import Register from './components/Register'
 import Dashboard from './components/Dashboard'
 import AIChat from './components/AIChat'
-import JobSearch from './components/JobSearch'
+import JobSearchEnhanced from './components/JobSearchEnhanced'
 import Profile from './components/Profile'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
+import './styles/jobsEnhanced.css'
 
 function App() {
   return (
@@ -38,7 +39,7 @@ function App() {
               path="/jobs"
               element={
                 <ProtectedRoute>
-                  <JobSearch />
+                  <JobSearchEnhanced />
                 </ProtectedRoute>
               }
             />
