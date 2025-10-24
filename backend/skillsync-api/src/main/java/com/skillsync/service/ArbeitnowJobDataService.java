@@ -295,11 +295,14 @@ public class ArbeitnowJobDataService implements JobDataService {
                 .distinct()
                 .collect(java.util.stream.Collectors.toList());
 
-        // If no valid roles in DB, return default roles
-        if (validRoles.isEmpty()) {
+        // Return defaultRoles if:
+        // 1. No roles in DB (validRoles is empty), OR
+        // 2. Not enough roles in DB (less than 5) - means DB not fully seeded yet
+        if (validRoles.isEmpty() || validRoles.size() < 5) {
             return defaultRoles;
         }
 
+        // Otherwise return the filtered DB roles (if DB has been properly seeded)
         return validRoles;
     }
 
