@@ -40,7 +40,7 @@ public class AIInsightsService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Get skill gap analysis from recommendations
+        // Try to get skill gap analysis from recommendations, but provide defaults if none exist
         var recommendation = recommendationService.getRecommendations(userId);
 
         // Build request
@@ -59,23 +59,35 @@ public class AIInsightsService {
                 .userId(userId.toString())
                 .name(user.getName())
                 .currentRole(user.getCurrentRole() != null ? user.getCurrentRole() : "Developer")
-                .targetRole(recommendation.getTargetRole())
+                .targetRole(recommendation != null ? recommendation.getTargetRole() : "Software Engineer")
                 .currentSkills(user.getSkills() != null ? user.getSkills() : new ArrayList<>())
                 .experienceYears(experienceYears)
                 .build();
 
-        // Extract missing skills from recommendations
-        List<String> missingSkills = recommendation.getRecommendations()
-                .stream()
-                .map(rec -> rec.getSkillName())
-                .toList();
+        // Extract missing skills from recommendations, with fallback
+        List<String> missingSkills = new ArrayList<>();
+        double skillGapPercentage = 0.0;
+        double alignmentScore = 0.0;
+        int matchingSkillsCount = 0;
+        int missingSkillsCount = 0;
+
+        if (recommendation != null && recommendation.getRecommendations() != null) {
+            missingSkills = recommendation.getRecommendations()
+                    .stream()
+                    .map(rec -> rec.getSkillName())
+                    .toList();
+            skillGapPercentage = recommendation.getSkillGapPercentage();
+            alignmentScore = recommendation.getAlignmentScore();
+            matchingSkillsCount = recommendation.getMatchingSkillsCount();
+            missingSkillsCount = recommendation.getMissingSkillsCount();
+        }
 
         SkillGapRequest skillGap = SkillGapRequest.builder()
-                .skillGapPercentage(recommendation.getSkillGapPercentage())
-                .alignmentScore(recommendation.getAlignmentScore())
+                .skillGapPercentage(skillGapPercentage)
+                .alignmentScore(alignmentScore)
                 .missingSkills(missingSkills)
-                .matchingSkillsCount(recommendation.getMatchingSkillsCount())
-                .missingSkillsCount(recommendation.getMissingSkillsCount())
+                .matchingSkillsCount(matchingSkillsCount)
+                .missingSkillsCount(missingSkillsCount)
                 .build();
 
         CareerAdviceRequest request = CareerAdviceRequest.builder()
@@ -83,6 +95,8 @@ public class AIInsightsService {
                 .skillGap(skillGap)
                 .question(question)
                 .build();
+
+        log.info("Sending AI request with profile: {}", userProfile);
 
         // Call AI service
         WebClient webClient = webClientBuilder

@@ -28,18 +28,30 @@ const AIChat = () => {
 
       const assistantMessage = {
         role: 'assistant',
-        content: response.advice,
-        reasoning: response.reasoning,
-        actionItems: response.action_items,
-        timeline: response.estimated_timeline,
-        confidence: response.confidence_score
+        content: response.advice || response.advice_text || 'I understand your question. Based on your profile, here\'s my recommendation...',
+        reasoning: response.reasoning || response.explanation,
+        actionItems: response.action_items || response.recommendations,
+        timeline: response.estimated_timeline || response.timeline,
+        confidence: response.confidence_score || response.confidence
       }
 
       setMessages(prev => [...prev, assistantMessage])
     } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message || 'Sorry, I encountered an error. Please try again.'
+
+      // More specific error handling
+      let userFriendlyError = errorMsg
+      if (errorMsg.includes('No recommendations')) {
+        userFriendlyError = 'Please set up your profile with your target role and skills first to get personalized advice.'
+      } else if (errorMsg.includes('User not found')) {
+        userFriendlyError = 'Could not find your profile. Please refresh the page.'
+      } else if (errorMsg.includes('timeout') || errorMsg.includes('503')) {
+        userFriendlyError = 'AI service is temporarily unavailable. Please try again in a moment.'
+      }
+
       setMessages(prev => [...prev, {
         role: 'error',
-        content: 'Sorry, I encountered an error. Please try again.'
+        content: userFriendlyError
       }])
     } finally {
       setLoading(false)
