@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -29,8 +29,12 @@ public class ArbeitnowJobDataService implements JobDataService {
     @Autowired
     private SkillDemandRepository skillDemandRepository;
 
-    private final WebClient webClient;
-    private final ObjectMapper objectMapper;
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final String ARBEITNOW_API_URL = "https://www.arbeitnow.com/api/job-board-api";
 
     // Common tech skills to extract from job descriptions
     private static final Set<String> KNOWN_SKILLS = new HashSet<>(Arrays.asList(
@@ -65,13 +69,6 @@ public class ArbeitnowJobDataService implements JobDataService {
             "REST API", "GraphQL", "Microservices", "Agile", "Scrum",
             "Jira", "Linux", "Unit Testing", "Jest", "JUnit"
     ));
-
-    public ArbeitnowJobDataService() {
-        this.webClient = WebClient.builder()
-                .baseUrl("https://www.arbeitnow.com/api")
-                .build();
-        this.objectMapper = new ObjectMapper();
-    }
 
     @Override
     public JobPostingResponse analyzeJobMarket(String role, String location, Integer maxResults) {
@@ -126,17 +123,15 @@ public class ArbeitnowJobDataService implements JobDataService {
         log.info("📡 Fetching jobs from Arbeitnow API for: {}", searchQuery);
 
         try {
-            String response = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/job-board-api")
-                            .queryParam("search", searchQuery)
-                            .queryParam("page", 1)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
+            // Build URL with query parameters
+            String url = ARBEITNOW_API_URL + "?search=" +
+                    java.net.URLEncoder.encode(searchQuery, java.nio.charset.StandardCharsets.UTF_8) +
+                    "&page=1";
 
-            if (response == null) {
+            log.debug("Requesting URL: {}", url);
+            String response = restTemplate.getForObject(url, String.class);
+
+            if (response == null || response.isEmpty()) {
                 log.warn("Empty response from Arbeitnow");
                 return new HashMap<>();
             }
@@ -145,7 +140,7 @@ public class ArbeitnowJobDataService implements JobDataService {
             JsonNode jobs = root.get("data");
 
             if (jobs == null || !jobs.isArray()) {
-                log.warn("No jobs data in response");
+                log.warn("No jobs data in response. Response: {}", response.substring(0, Math.min(200, response.length())));
                 return new HashMap<>();
             }
 
@@ -177,7 +172,7 @@ public class ArbeitnowJobDataService implements JobDataService {
             return skillCount;
 
         } catch (Exception e) {
-            log.error("Error parsing Arbeitnow response: {}", e.getMessage());
+            log.error("Error parsing Arbeitnow response: {}", e.getMessage(), e);
             return new HashMap<>();
         }
     }
