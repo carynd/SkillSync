@@ -241,21 +241,66 @@ public class ArbeitnowJobDataService implements JobDataService {
 
     @Override
     public List<String> getAvailableRoles() {
-        List<String> roles = skillDemandRepository.findAllDistinctRoles();
+        List<String> defaultRoles = Arrays.asList(
+                // Tech Industry
+                "Frontend Engineer",
+                "Backend Engineer",
+                "Full Stack Engineer",
+                "DevOps Engineer",
+                "Data Scientist",
+                "Machine Learning Engineer",
+                "Cloud Architect",
+                "Mobile Developer",
+                "QA Engineer",
+                "Solutions Architect",
+                // Product & Design
+                "Product Manager",
+                "UX/UI Designer",
+                "Product Designer",
+                "Interaction Designer",
+                // Management & Leadership
+                "Tech Lead",
+                "Engineering Manager",
+                "CTO",
+                "VP Engineering",
+                "Project Manager",
+                // Data & Analytics
+                "Data Engineer",
+                "Analytics Engineer",
+                "Business Analyst",
+                "Data Analyst",
+                // Security & Infrastructure
+                "Security Engineer",
+                "Cybersecurity Analyst",
+                "Infrastructure Engineer",
+                "Database Administrator",
+                // AI & Emerging Tech
+                "AI Engineer",
+                "Prompt Engineer",
+                "LLM Engineer",
+                // Non-Tech but Tech-Relevant
+                "Technical Writer",
+                "Developer Advocate",
+                "Solutions Engineer",
+                "Systems Engineer",
+                "IT Specialist"
+        );
 
-        // If no roles in DB, return default roles
-        if (roles.isEmpty()) {
-            return Arrays.asList(
-                    "Full Stack Engineer",
-                    "Frontend Engineer",
-                    "Backend Engineer",
-                    "DevOps Engineer",
-                    "Data Scientist",
-                    "Product Manager"
-            );
+        List<String> dbRoles = skillDemandRepository.findAllDistinctRoles();
+
+        // Filter out invalid roles (like "string") and keep only valid ones
+        List<String> validRoles = dbRoles.stream()
+                .filter(role -> !role.trim().isEmpty() && defaultRoles.contains(role))
+                .sorted()
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+
+        // If no valid roles in DB, return default roles
+        if (validRoles.isEmpty()) {
+            return defaultRoles;
         }
 
-        return roles;
+        return validRoles;
     }
 
     private JobPostingResponse createMockResponse(String role) {
