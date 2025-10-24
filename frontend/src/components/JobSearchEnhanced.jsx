@@ -64,6 +64,10 @@ const JobSearchEnhanced = () => {
     setSkillsLoading(true)
 
     try {
+      // First sync job data for this role to populate the database
+      await jobService.syncJobData({ role, location: 'Remote', maxResults: 50 })
+
+      // Then fetch the skills
       const skillsData = await jobService.getSkillsForRole(role)
       setSkills(skillsData)
       setError('')
@@ -86,6 +90,9 @@ const JobSearchEnhanced = () => {
     setCompareLoading(true)
 
     try {
+      // First sync job data for this role
+      await jobService.syncJobData({ role, location: 'Remote', maxResults: 50 })
+
       const skillsData = await jobService.getSkillsForRole(role)
       setCompareSkills(skillsData)
       setError('')
