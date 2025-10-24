@@ -1,6 +1,7 @@
 package com.skillsync.model;
 
 import com.skillsync.enums.ExperienceLevel;
+import com.skillsync.enums.JobRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,11 +40,13 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "\"current_role\"")
-    private String currentRole;
+    private JobRole currentRole;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "\"target_role\"")
-    private String targetRole;
+    private JobRole targetRole;
 
     @Column(columnDefinition = "TEXT[]")
     private List<String> skills;

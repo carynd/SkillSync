@@ -1,5 +1,6 @@
 package com.skillsync.controller;
 
+import com.skillsync.enums.JobRole;
 import com.skillsync.repository.SkillDemandRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,56 +20,9 @@ public class AdminController {
     @Autowired
     private SkillDemandRepository skillDemandRepository;
 
-    private static final List<String> VALID_ROLES = Arrays.asList(
-            // Tech Industry
-            "Frontend Engineer",
-            "Backend Engineer",
-            "Full Stack Engineer",
-            "DevOps Engineer",
-            "Data Scientist",
-            "Machine Learning Engineer",
-            "Cloud Architect",
-            "Mobile Developer",
-            "QA Engineer",
-            "Solutions Architect",
-
-            // Product & Design
-            "Product Manager",
-            "UX/UI Designer",
-            "Product Designer",
-            "Interaction Designer",
-
-            // Management & Leadership
-            "Tech Lead",
-            "Engineering Manager",
-            "CTO",
-            "VP Engineering",
-            "Project Manager",
-
-            // Data & Analytics
-            "Data Engineer",
-            "Analytics Engineer",
-            "Business Analyst",
-            "Data Analyst",
-
-            // Security & Infrastructure
-            "Security Engineer",
-            "Cybersecurity Analyst",
-            "Infrastructure Engineer",
-            "Database Administrator",
-
-            // AI & Emerging Tech
-            "AI Engineer",
-            "Prompt Engineer",
-            "LLM Engineer",
-
-            // Non-Tech but Tech-Relevant
-            "Technical Writer",
-            "Developer Advocate",
-            "Solutions Engineer",
-            "Systems Engineer",
-            "IT Specialist"
-    );
+    private static final List<String> VALID_ROLES = Arrays.stream(JobRole.values())
+            .map(JobRole::getDisplayName)
+            .toList();
 
     @PostMapping("/cleanup-roles")
     @Operation(summary = "Clean up invalid roles from database",

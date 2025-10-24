@@ -3,6 +3,7 @@ package com.skillsync.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skillsync.dto.JobPostingResponse;
+import com.skillsync.enums.JobRole;
 import com.skillsync.model.SkillDemand;
 import com.skillsync.repository.SkillDemandRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -241,50 +242,10 @@ public class ArbeitnowJobDataService implements JobDataService {
 
     @Override
     public List<String> getAvailableRoles() {
-        List<String> defaultRoles = Arrays.asList(
-                // Tech Industry
-                "Frontend Engineer",
-                "Backend Engineer",
-                "Full Stack Engineer",
-                "DevOps Engineer",
-                "Data Scientist",
-                "Machine Learning Engineer",
-                "Cloud Architect",
-                "Mobile Developer",
-                "QA Engineer",
-                "Solutions Architect",
-                // Product & Design
-                "Product Manager",
-                "UX/UI Designer",
-                "Product Designer",
-                "Interaction Designer",
-                // Management & Leadership
-                "Tech Lead",
-                "Engineering Manager",
-                "CTO",
-                "VP Engineering",
-                "Project Manager",
-                // Data & Analytics
-                "Data Engineer",
-                "Analytics Engineer",
-                "Business Analyst",
-                "Data Analyst",
-                // Security & Infrastructure
-                "Security Engineer",
-                "Cybersecurity Analyst",
-                "Infrastructure Engineer",
-                "Database Administrator",
-                // AI & Emerging Tech
-                "AI Engineer",
-                "Prompt Engineer",
-                "LLM Engineer",
-                // Non-Tech but Tech-Relevant
-                "Technical Writer",
-                "Developer Advocate",
-                "Solutions Engineer",
-                "Systems Engineer",
-                "IT Specialist"
-        );
+        // Get all roles from JobRole enum
+        List<String> defaultRoles = Arrays.stream(JobRole.values())
+                .map(JobRole::getDisplayName)
+                .toList();
 
         List<String> dbRoles = skillDemandRepository.findAllDistinctRoles();
 

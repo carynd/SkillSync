@@ -4,6 +4,7 @@ import com.skillsync.dto.ai.CareerAdviceRequest;
 import com.skillsync.dto.ai.CareerAdviceResponse;
 import com.skillsync.dto.ai.SkillGapRequest;
 import com.skillsync.dto.ai.UserProfileRequest;
+import com.skillsync.enums.JobRole;
 import com.skillsync.model.User;
 import com.skillsync.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -55,11 +56,21 @@ public class AIInsightsService {
             }
         }
 
+        // Determine current role display name
+        String currentRoleStr = user.getCurrentRole() != null ?
+                user.getCurrentRole().getDisplayName() : "Developer";
+
+        // Determine target role display name from recommendation or use default
+        String targetRoleStr = "Software Engineer";
+        if (recommendation != null && recommendation.getTargetRole() != null) {
+            targetRoleStr = recommendation.getTargetRole();
+        }
+
         UserProfileRequest userProfile = UserProfileRequest.builder()
                 .userId(userId.toString())
                 .name(user.getName())
-                .currentRole(user.getCurrentRole() != null ? user.getCurrentRole() : "Developer")
-                .targetRole(recommendation != null ? recommendation.getTargetRole() : "Software Engineer")
+                .currentRole(currentRoleStr)
+                .targetRole(targetRoleStr)
                 .currentSkills(user.getSkills() != null ? user.getSkills() : new ArrayList<>())
                 .experienceYears(experienceYears)
                 .build();

@@ -42,7 +42,7 @@ public class RecommendationService {
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
         // 2. Validate user has required data
-        if (user.getTargetRole() == null || user.getTargetRole().isEmpty()) {
+        if (user.getTargetRole() == null) {
             throw new RuntimeException("User must set a target role first");
         }
 
@@ -57,7 +57,7 @@ public class RecommendationService {
 
         // 4. Get skills required for target role
         List<SkillDemand> requiredSkills = skillDemandRepository
-                .findByRoleOrderByDemandScoreDesc(user.getTargetRole());
+                .findByRoleOrderByDemandScoreDesc(user.getTargetRole().getDisplayName());
 
         if (requiredSkills.isEmpty()) {
             throw new RuntimeException("No skill data available for role: " + user.getTargetRole());
@@ -80,7 +80,7 @@ public class RecommendationService {
         // 9. Save recommendation to cache
         Recommendation recommendation = Recommendation.builder()
                 .userId(userId)
-                .targetRole(user.getTargetRole())
+                .targetRole(user.getTargetRole().getDisplayName())
                 .missingSkills(gap.getMissingSkills())
                 .skillGapPercentage(gap.getGapPercentage())
                 .alignmentScore(gap.getAlignmentScore())
@@ -95,8 +95,8 @@ public class RecommendationService {
         return RecommendationResponse.builder()
                 .userId(userId)
                 .userName(user.getName())
-                .currentRole(user.getCurrentRole())
-                .targetRole(user.getTargetRole())
+                .currentRole(user.getCurrentRole() != null ? user.getCurrentRole().getDisplayName() : null)
+                .targetRole(user.getTargetRole() != null ? user.getTargetRole().getDisplayName() : null)
                 .currentSkills(new ArrayList<>(userSkills))
                 .skillGapPercentage(gap.getGapPercentage())
                 .alignmentScore(gap.getAlignmentScore())
@@ -269,7 +269,7 @@ public class RecommendationService {
     private RecommendationResponse buildRecommendationResponse(User user, Recommendation cached) {
         // Get required skills for recommendations
         List<SkillDemand> requiredSkills = skillDemandRepository
-                .findByRoleOrderByDemandScoreDesc(user.getTargetRole());
+                .findByRoleOrderByDemandScoreDesc(user.getTargetRole().getDisplayName());
 
         List<RecommendationResponse.SkillRecommendation> recommendations =
                 generateSkillRecommendations(cached.getMissingSkills(), requiredSkills);
@@ -280,8 +280,8 @@ public class RecommendationService {
         return RecommendationResponse.builder()
                 .userId(user.getUserId())
                 .userName(user.getName())
-                .currentRole(user.getCurrentRole())
-                .targetRole(user.getTargetRole())
+                .currentRole(user.getCurrentRole() != null ? user.getCurrentRole().getDisplayName() : null)
+                .targetRole(user.getTargetRole() != null ? user.getTargetRole().getDisplayName() : null)
                 .currentSkills(new ArrayList<>(userSkills))
                 .skillGapPercentage(cached.getSkillGapPercentage())
                 .alignmentScore(cached.getAlignmentScore())

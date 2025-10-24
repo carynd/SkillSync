@@ -1,6 +1,7 @@
 package com.skillsync.dto;
 
 import com.skillsync.enums.ExperienceLevel;
+import com.skillsync.enums.JobRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -23,9 +24,9 @@ public class UserUpdateRequest {
     @Email(message = "Email should be valid")
     private String email;
 
-    private String currentRole;
+    private JobRole currentRole;
 
-    private String targetRole;
+    private JobRole targetRole;
 
     private List<String> skills;
 
