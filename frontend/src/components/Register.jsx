@@ -32,8 +32,8 @@ const Register = () => {
       return
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long')
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long')
       return
     }
 
@@ -44,7 +44,10 @@ const Register = () => {
       await register(userData)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.')
+      console.error('Registration error:', err)
+      console.error('Error response:', err.response)
+      const errorMsg = err.response?.data?.message || err.message || 'Registration failed. Please try again.'
+      setError(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -96,7 +99,7 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               required
-              placeholder="Create a password (min 6 characters)"
+              placeholder="Create a password (min 8 characters)"
               disabled={loading}
             />
           </div>
