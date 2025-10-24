@@ -31,8 +31,6 @@ public class UserService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private RecommendationService recommendationService;
 
     @Transactional
     public AuthResponse registerUser(UserRegistrationRequest request) {
@@ -108,10 +106,6 @@ public class UserService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        // Track if target role or skills changed (need to regenerate recommendations)
-        boolean targetRoleChanged = false;
-        boolean skillsChanged = false;
-
         // Update user fields
         if (request.getName() != null) {
             user.setName(request.getName());
@@ -124,11 +118,9 @@ public class UserService {
         }
         if (request.getTargetRole() != null && !request.getTargetRole().equals(user.getTargetRole())) {
             user.setTargetRole(request.getTargetRole());
-            targetRoleChanged = true;
         }
         if (request.getSkills() != null) {
             user.setSkills(request.getSkills());
-            skillsChanged = true;
         }
         if (request.getExperienceLevel() != null) {
             user.setExperienceLevel(request.getExperienceLevel());
@@ -142,18 +134,9 @@ public class UserService {
 
         User updatedUser = userRepository.save(user);
 
-        // Auto-generate recommendations if target role or skills changed
-        if (targetRoleChanged || skillsChanged) {
-            try {
-                // Clear old recommendations
-                recommendationService.clearRecommendations(userId);
-                // Generate new recommendations
-                recommendationService.generateRecommendations(userId);
-            } catch (Exception e) {
-                // Log error but don't fail the update
-                // User can manually generate recommendations later
-            }
-        }
+        // Note: Recommendations are NOT auto-generated on profile updates to avoid transaction issues
+        // Users can manually trigger recommendation generation from the dashboard when needed
+        // The separate transaction propagation prevents recommendation generation failures from affecting profile updates
 
         return mapToUserResponse(updatedUser);
     }

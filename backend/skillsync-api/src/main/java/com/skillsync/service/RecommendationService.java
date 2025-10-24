@@ -11,6 +11,7 @@ import com.skillsync.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -30,8 +31,9 @@ public class RecommendationService {
 
     /**
      * Generate personalized recommendations for a user based on their target role
+     * Using REQUIRES_NEW to run in a separate transaction, so exceptions don't affect the calling transaction
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public RecommendationResponse generateRecommendations(UUID userId) {
         log.info("Generating recommendations for user: {}", userId);
 
