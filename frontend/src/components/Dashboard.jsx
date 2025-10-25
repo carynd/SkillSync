@@ -45,7 +45,7 @@ const Dashboard = () => {
       if (err.response?.status === 400 || errorMessage.includes('target role')) {
         setError('Please set your target role and skills in your profile first.')
       } else if (errorMessage.includes('No skill data')) {
-        setError('No skill data available for your target role. Please sync job data first from the Jobs page.')
+        setError('No skill data available for your target role. Please sync job data first from the Jobs page. After syncing, refresh this page.')
       } else {
         setError('Failed to load recommendations. Please try again.')
       }
