@@ -1,18 +1,28 @@
 package com.skillsync.enums;
 
 public enum ExperienceLevel {
-    BEGINNER("0-2 years"),
-    INTERMEDIATE("3-5 years"),
-    ADVANCED("6-10 years"),
-    EXPERT("10+ years");
+    BEGINNER("Beginner"),
+    INTERMEDIATE("Intermediate"),
+    ADVANCED("Advanced"),
+    EXPERT("Expert");
 
-    private final String description;
+    private final String displayName;
 
-    ExperienceLevel(String description) {
-        this.description = description;
+    ExperienceLevel(String displayName) {
+        this.displayName = displayName;
     }
 
-    public String getDescription() {
-        return description;
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public static ExperienceLevel fromDisplayName(String displayName) {
+        if (displayName == null) return null;
+        for (ExperienceLevel level : ExperienceLevel.values()) {
+            if (level.displayName.equalsIgnoreCase(displayName)) {
+                return level;
+            }
+        }
+        return null;
     }
 }
