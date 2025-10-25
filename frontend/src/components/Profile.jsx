@@ -101,35 +101,52 @@ const Profile = () => {
     }
 
     try {
+      console.log('Profile Update - Step 1: Updating user profile with:', {
+        targetRole: formData.targetRole,
+        skills: formData.skills,
+        experienceLevel: formData.experienceLevel
+      })
+
       // Step 1: Update user profile
       await userService.updateUserProfile(user.userId, formData)
       setSuccess('Profile updated! Syncing job market data...')
+      console.log('Profile Update - Step 1 Complete: User profile updated')
 
       // Step 2: Sync job data for target role
       try {
-        await jobService.syncJobData({
+        console.log('Profile Update - Step 2: Syncing job data for role:', formData.targetRole)
+        const syncResponse = await jobService.syncJobData({
           role: formData.targetRole,
           location: 'Remote',
           maxResults: 100
         })
+        console.log('Profile Update - Step 2 Complete: Job data synced, skills count:', syncResponse.skills?.length || 0)
       } catch (syncErr) {
-        console.warn('Job sync warning:', syncErr)
+        console.warn('Profile Update - Step 2 Warning: Job sync failed', syncErr.response?.data?.message || syncErr.message)
       }
 
       setSuccess('Profile updated successfully! Generating recommendations...')
 
       // Step 3: Generate recommendations
       try {
-        await jobService.generateRecommendations(user.userId)
+        console.log('Profile Update - Step 3: Generating recommendations for user:', user.userId)
+        const recResponse = await jobService.generateRecommendations(user.userId)
+        console.log('Profile Update - Step 3 Complete: Recommendations generated', {
+          skillGapPercentage: recResponse.skillGapPercentage,
+          alignmentScore: recResponse.alignmentScore
+        })
       } catch (recErr) {
-        console.warn('Recommendation generation warning:', recErr)
+        console.warn('Profile Update - Step 3 Warning: Recommendation generation failed', recErr.response?.data?.message || recErr.message)
       }
 
+      console.log('Profile Update - All steps complete, redirecting to dashboard')
       setTimeout(() => {
         navigate('/dashboard')
       }, 2000)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update profile. Please try again.')
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to update profile. Please try again.'
+      console.error('Profile Update - Error:', errorMessage, err)
+      setError(errorMessage)
     } finally {
       setSaving(false)
     }

@@ -17,30 +17,46 @@ const Dashboard = () => {
   const loadRecommendations = async () => {
     try {
       setLoading(true)
+      console.log('Dashboard - Loading recommendations for user:', user.userId)
 
       // Try to get cached recommendations first
       try {
+        console.log('Dashboard - Attempt 1: Fetching cached recommendations...')
         const data = await jobService.getRecommendations(user.userId)
+        console.log('Dashboard - Found cached recommendations:', {
+          targetRole: data.targetRole,
+          skillGapPercentage: data.skillGapPercentage,
+          recommendationsCount: data.recommendations?.length || 0
+        })
         setRecommendations(data)
         setError('')
         return
       } catch (err) {
         // If 404, recommendations don't exist yet - generate them
         if (err.response?.status === 404) {
-          console.log('No cached recommendations found, generating new ones...')
+          console.log('Dashboard - No cached recommendations found (404), generating new ones...')
           const data = await jobService.generateRecommendations(user.userId)
+          console.log('Dashboard - Generated new recommendations:', {
+            targetRole: data.targetRole,
+            skillGapPercentage: data.skillGapPercentage,
+            recommendationsCount: data.recommendations?.length || 0
+          })
           setRecommendations(data)
           setError('')
           return
         }
         // If other error, throw to outer catch
+        console.error('Dashboard - Unexpected error during recommendation fetch:', err.response?.status, err.response?.data)
         throw err
       }
     } catch (err) {
-      console.error('Error loading recommendations:', err)
+      console.error('Dashboard - Error loading recommendations:', err.response?.data || err.message)
 
       // Check for specific error messages
       const errorMessage = err.response?.data?.message || err.message || ''
+      const errorStatus = err.response?.status || 'unknown'
+
+      console.error('Dashboard - Error details:', { errorStatus, errorMessage })
 
       if (err.response?.status === 400 || errorMessage.includes('target role')) {
         setError('Please set your target role and skills in your profile first.')
