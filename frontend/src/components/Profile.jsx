@@ -6,6 +6,50 @@ import userService from '../services/userService'
 import jobService from '../services/jobService'
 import api from '../services/api'
 
+// Mapping of display names to enum constants
+const ROLE_DISPLAY_TO_ENUM = {
+  'Frontend Engineer': 'FRONTEND_ENGINEER',
+  'Backend Engineer': 'BACKEND_ENGINEER',
+  'Full Stack Engineer': 'FULL_STACK_ENGINEER',
+  'DevOps Engineer': 'DEVOPS_ENGINEER',
+  'Data Scientist': 'DATA_SCIENTIST',
+  'Machine Learning Engineer': 'MACHINE_LEARNING_ENGINEER',
+  'Cloud Architect': 'CLOUD_ARCHITECT',
+  'Mobile Developer': 'MOBILE_DEVELOPER',
+  'QA Engineer': 'QA_ENGINEER',
+  'Solutions Architect': 'SOLUTIONS_ARCHITECT',
+  'Product Manager': 'PRODUCT_MANAGER',
+  'UX/UI Designer': 'UX_UI_DESIGNER',
+  'Product Designer': 'PRODUCT_DESIGNER',
+  'Interaction Designer': 'INTERACTION_DESIGNER',
+  'Tech Lead': 'TECH_LEAD',
+  'Engineering Manager': 'ENGINEERING_MANAGER',
+  'CTO': 'CTO',
+  'VP Engineering': 'VP_ENGINEERING',
+  'Project Manager': 'PROJECT_MANAGER',
+  'Data Engineer': 'DATA_ENGINEER',
+  'Analytics Engineer': 'ANALYTICS_ENGINEER',
+  'Business Analyst': 'BUSINESS_ANALYST',
+  'Data Analyst': 'DATA_ANALYST',
+  'Security Engineer': 'SECURITY_ENGINEER',
+  'Cybersecurity Analyst': 'CYBERSECURITY_ANALYST',
+  'Infrastructure Engineer': 'INFRASTRUCTURE_ENGINEER',
+  'Database Administrator': 'DATABASE_ADMINISTRATOR',
+  'AI Engineer': 'AI_ENGINEER',
+  'Prompt Engineer': 'PROMPT_ENGINEER',
+  'LLM Engineer': 'LLM_ENGINEER',
+  'Technical Writer': 'TECHNICAL_WRITER',
+  'Developer Advocate': 'DEVELOPER_ADVOCATE',
+  'Solutions Engineer': 'SOLUTIONS_ENGINEER',
+  'Systems Engineer': 'SYSTEMS_ENGINEER',
+  'IT Specialist': 'IT_SPECIALIST'
+}
+
+// Reverse mapping: enum constants to display names
+const ROLE_ENUM_TO_DISPLAY = Object.fromEntries(
+  Object.entries(ROLE_DISPLAY_TO_ENUM).map(([display, enumVal]) => [enumVal, display])
+)
+
 const Profile = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -41,10 +85,12 @@ const Profile = () => {
 
       // Load user profile
       const profile = await userService.getUserProfile(user.userId)
+      // Convert enum constant to display name for the form
+      const displayName = profile.targetRole ? ROLE_ENUM_TO_DISPLAY[profile.targetRole] : ''
       setFormData({
         name: profile.name || '',
         email: profile.email || '',
-        targetRole: profile.targetRole || '',
+        targetRole: displayName || '',
         skills: profile.skills || [],
         experienceLevel: profile.experienceLevel || 'BEGINNER'
       })
@@ -101,22 +147,35 @@ const Profile = () => {
     }
 
     try {
+      // Convert display name back to enum constant for backend
+      const enumRole = ROLE_DISPLAY_TO_ENUM[formData.targetRole]
+      if (!enumRole) {
+        setError('Invalid role selected')
+        setSaving(false)
+        return
+      }
+
+      const profileData = {
+        ...formData,
+        targetRole: enumRole
+      }
+
       console.log('Profile Update - Step 1: Updating user profile with:', {
-        targetRole: formData.targetRole,
-        skills: formData.skills,
-        experienceLevel: formData.experienceLevel
+        targetRole: profileData.targetRole,
+        skills: profileData.skills,
+        experienceLevel: profileData.experienceLevel
       })
 
       // Step 1: Update user profile
-      await userService.updateUserProfile(user.userId, formData)
+      await userService.updateUserProfile(user.userId, profileData)
       setSuccess('Profile updated! Syncing job market data...')
       console.log('Profile Update - Step 1 Complete: User profile updated')
 
-      // Step 2: Sync job data for target role
+      // Step 2: Sync job data for target role (use display name for sync endpoint)
       try {
         console.log('Profile Update - Step 2: Syncing job data for role:', formData.targetRole)
         const syncResponse = await jobService.syncJobData({
-          role: formData.targetRole,
+          role: formData.targetRole, // This is the display name, which is what the sync endpoint expects
           location: 'Remote',
           maxResults: 100
         })
