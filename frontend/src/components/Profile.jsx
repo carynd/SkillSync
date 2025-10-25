@@ -105,7 +105,7 @@ const Profile = () => {
       await userService.updateUserProfile(user.userId, formData)
       setSuccess('Profile updated! Syncing job market data...')
 
-      // Step 2: Sync job data for target role (critical for recommendations!)
+      // Step 2: Sync job data for target role
       try {
         await jobService.syncJobData({
           role: formData.targetRole,
@@ -114,7 +114,6 @@ const Profile = () => {
         })
       } catch (syncErr) {
         console.warn('Job sync warning:', syncErr)
-        // Don't fail if sync fails, user can still see recommendations
       }
 
       setSuccess('Profile updated successfully! Generating recommendations...')
@@ -124,7 +123,6 @@ const Profile = () => {
         await jobService.generateRecommendations(user.userId)
       } catch (recErr) {
         console.warn('Recommendation generation warning:', recErr)
-        // Don't fail if recommendations fail to generate immediately
       }
 
       setTimeout(() => {
