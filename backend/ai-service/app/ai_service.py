@@ -32,6 +32,17 @@ class AIInsightsService:
             # Build context from user profile and skill gap
             context = self._build_context(request)
 
+            # Log the actual data being used
+            logger.info(f"=== AI ADVICE REQUEST ===")
+            logger.info(f"User: {request.user_profile.name} ({request.user_profile.user_id})")
+            logger.info(f"Current Role: {request.user_profile.current_role}")
+            logger.info(f"Target Role: {request.user_profile.target_role}")
+            logger.info(f"Current Skills: {request.user_profile.current_skills}")
+            logger.info(f"Missing Skills: {request.skill_gap.missing_skills}")
+            logger.info(f"Question: {request.question}")
+            logger.info(f"Skill Alignment: {request.skill_gap.alignment_score}%")
+            logger.info(f"Skill Gap: {request.skill_gap.skill_gap_percentage}%")
+
             # Create simpler prompt that doesn't trigger safety filters
             full_prompt = f"""You are a professional career development advisor. Help this person.
 

@@ -60,10 +60,16 @@ public class AIInsightsService {
         String currentRoleStr = user.getCurrentRole() != null ?
                 user.getCurrentRole().getDisplayName() : "Developer";
 
-        // Determine target role display name from recommendation or use default
+        // Determine target role display name - prefer user's target role (it's an enum, so we get display name)
         String targetRoleStr = "Software Engineer";
-        if (recommendation != null && recommendation.getTargetRole() != null) {
+        if (user.getTargetRole() != null) {
+            // Use user's target role (it's a JobRole enum, so getDisplayName() gives us the proper name)
+            targetRoleStr = user.getTargetRole().getDisplayName();
+            log.info("Using user's target role display name: {}", targetRoleStr);
+        } else if (recommendation != null && recommendation.getTargetRole() != null) {
+            // Fall back to recommendation's target role if user doesn't have one
             targetRoleStr = recommendation.getTargetRole();
+            log.info("Using recommendation target role: {}", targetRoleStr);
         }
 
         UserProfileRequest userProfile = UserProfileRequest.builder()
