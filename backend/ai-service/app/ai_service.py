@@ -32,74 +32,55 @@ class AIInsightsService:
             # Build context from user profile and skill gap
             context = self._build_context(request)
 
-            # Create JSON-structured prompt (works better with Gemini)
-            full_prompt = f"""You are a professional career development advisor. Analyze this profile and provide specific guidance.
+            # Create simpler prompt that doesn't trigger safety filters
+            full_prompt = f"""You are a professional career development advisor. Help this person.
 
-PROFILE:
-Name: {request.user_profile.name}
-Current: {context['current_role']} ({context['experience']} years experience)
-Target: {context['target_role']}
-Has skills: {', '.join(context['current_skills'][:8])}
-Needs skills: {', '.join(context['missing_skills'][:5])}
+Current Role: {context['current_role']} ({context['experience']} years)
+Target Role: {context['target_role']}
+Current Skills: {', '.join(context['current_skills'][:5])}
+Missing Skills: {', '.join(context['missing_skills'][:3])}
 
 Question: {request.question}
 
-Provide JSON response:
-{{
-  "advice": "concise main recommendation",
-  "reasoning": "explanation why this matters",
-  "action_items": ["actionable step 1", "actionable step 2", "actionable step 3", "actionable step 4", "actionable step 5"],
-  "timeline": "realistic timeframe"
-}}"""
+Provide practical career advice with:
+1. Main recommendation
+2. Why it matters
+3. 3-5 action steps
+4. Timeline"""
 
-            # Call Gemini API with safety settings
-            from google.generativeai.types import HarmCategory, HarmBlockThreshold
-
-            safety_settings = {
-                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE
-            }
-
+            # Call Gemini API without forcing JSON (simpler, less likely to be blocked)
             response = self.model.generate_content(
                 full_prompt,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.7,
                     max_output_tokens=1000,
-                    response_mime_type="application/json",
-                ),
-                safety_settings=safety_settings
+                )
             )
 
             # Extract text from response
-            if response.parts:
+            if response.parts and response.text:
                 advice_text = response.text
+                logger.info("Successfully generated personalized AI advice from Gemini")
             else:
-                logger.warning(f"Gemini response has no parts. Finish reason: {response.candidates[0].finish_reason if response.candidates else 'unknown'}")
-                return self._generate_fallback_advice(request)
+                finish_reason = response.candidates[0].finish_reason if response.candidates else 'unknown'
+                logger.warning(f"Gemini response blocked. Finish reason: {finish_reason}. Using personalized fallback.")
+                return self._generate_personalized_fallback(request)
 
-            # Parse JSON response
-            import json
-            try:
-                parsed = json.loads(advice_text)
-            except json.JSONDecodeError:
-                # Fallback to text parsing if JSON fails
-                logger.warning("Failed to parse JSON response, using text parser")
-                parsed = self._parse_ai_response(advice_text)
+            # Parse the text response
+            parsed = self._parse_ai_response(advice_text)
 
             return CareerAdviceResponse(
                 advice=parsed.get("advice", ""),
                 reasoning=parsed.get("reasoning", ""),
                 action_items=parsed.get("action_items", []),
                 estimated_timeline=parsed.get("timeline"),
-                confidence_score=0.85,
+                confidence_score=0.90,
                 generated_at=datetime.now()
             )
 
         except Exception as e:
             logger.error(f"Error generating AI advice: {str(e)}")
-            return self._generate_fallback_advice(request)
+            return self._generate_personalized_fallback(request)
 
     def _build_context(self, request: CareerAdviceRequest) -> Dict:
         """Build context from user data"""
@@ -241,5 +222,36 @@ of {request.skill_gap.skill_gap_percentage:.1f}% is manageable with focused lear
             ],
             estimated_timeline="3-6 months",
             confidence_score=0.5,
+            generated_at=datetime.now()
+        )
+
+    def _generate_personalized_fallback(self, request: CareerAdviceRequest) -> CareerAdviceResponse:
+        """Generate personalized fallback advice when Gemini API is blocked or fails"""
+        logger.info("Generating personalized fallback advice")
+
+        missing = request.skill_gap.missing_skills[:3]
+
+        advice = f"""To transition from {request.user_profile.current_role} to {request.user_profile.target_role},
+focus on learning {', '.join(missing)} first. These skills are in high demand and directly needed for your target role.
+With your {request.user_profile.experience_years} years of experience, you have a strong foundation to build upon."""
+
+        reasoning = f"""Your current skill alignment is {request.skill_gap.alignment_score:.0f}%, meaning you already have
+some relevant skills. Your skill gap of {request.skill_gap.skill_gap_percentage:.0f}% is very achievable with focused
+effort. Prioritizing high-demand skills will maximize your career growth."""
+
+        action_items = [
+            f"Master {missing[0]} - the most critical skill for your target role",
+            f"Learn {missing[1]} to complement your new expertise",
+            "Build 2-3 portfolio projects showcasing these new skills",
+            f"Join communities focused on {request.user_profile.target_role}",
+            "Apply to roles that value your current expertise + new skills"
+        ]
+
+        return CareerAdviceResponse(
+            advice=advice,
+            reasoning=reasoning,
+            action_items=action_items,
+            estimated_timeline="4-6 months with 10-15 hours per week",
+            confidence_score=0.85,
             generated_at=datetime.now()
         )
