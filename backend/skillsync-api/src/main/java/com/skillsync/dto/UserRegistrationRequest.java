@@ -1,8 +1,5 @@
 package com.skillsync.dto;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.skillsync.config.ExperienceLevelDeserializer;
-import com.skillsync.config.JobRoleDeserializer;
 import com.skillsync.enums.ExperienceLevel;
 import com.skillsync.enums.JobRole;
 import jakarta.validation.constraints.Email;
@@ -32,15 +29,12 @@ public class UserRegistrationRequest {
     @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 
-    @JsonDeserialize(using = JobRoleDeserializer.class)
     private JobRole currentRole;
 
-    @JsonDeserialize(using = JobRoleDeserializer.class)
     private JobRole targetRole;
 
     private List<String> skills;
 
-    @JsonDeserialize(using = ExperienceLevelDeserializer.class)
     private ExperienceLevel experienceLevel;
 
     private String goals;

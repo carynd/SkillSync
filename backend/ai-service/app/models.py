@@ -32,10 +32,10 @@ class CareerAdviceRequest(BaseModel):
 class CareerAdviceResponse(BaseModel):
     """AI-generated career advice"""
     advice: str
-    reasoning: str
-    action_items: List[str]
+    reasoning: Optional[str] = None
+    action_items: Optional[List[str]] = None
     estimated_timeline: Optional[str] = None
-    confidence_score: float = Field(..., ge=0.0, le=1.0)
+    confidence_score: Optional[float] = None
     generated_at: datetime
 
 

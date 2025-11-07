@@ -512,6 +512,95 @@ body {
 
 .advice {
   margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+/* Markdown rendering styles */
+.advice strong,
+.advice b {
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.advice em,
+.advice i {
+  font-style: italic;
+  color: #374151;
+}
+
+.advice h1,
+.advice h2,
+.advice h3,
+.advice h4,
+.advice h5,
+.advice h6 {
+  margin: 16px 0 8px 0;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.advice h1 {
+  font-size: 20px;
+}
+
+.advice h2 {
+  font-size: 18px;
+}
+
+.advice h3 {
+  font-size: 16px;
+}
+
+.advice h4,
+.advice h5,
+.advice h6 {
+  font-size: 14px;
+}
+
+.advice p {
+  margin: 8px 0;
+}
+
+.advice ul,
+.advice ol {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.advice li {
+  margin: 6px 0;
+  color: #374151;
+}
+
+.advice code {
+  background-color: #F3F4F6;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #DC2626;
+}
+
+.advice pre {
+  background-color: #F3F4F6;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.advice pre code {
+  background-color: transparent;
+  padding: 0;
+  color: #1F2937;
+}
+
+.advice blockquote {
+  border-left: 4px solid #D1D5DB;
+  padding-left: 16px;
+  margin: 12px 0;
+  color: #6B7280;
+  font-style: italic;
 }
 
 .reasoning-section,

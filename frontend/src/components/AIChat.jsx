@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { useAuth } from '../context/AuthContext'
 import aiService from '../services/aiService'
 
@@ -82,7 +83,9 @@ const AIChat = () => {
               <div className="message-content assistant-message">
                 <div className="message-avatar">AI</div>
                 <div className="message-text">
-                  <p className="advice">{message.content}</p>
+                  <div className="advice">
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
 
                   {message.reasoning && (
                     <div className="reasoning-section">
