@@ -1,0 +1,110 @@
+.ai-chat-layout {
+  display: flex;
+  height: calc(100vh - 60px);
+  gap: 0;
+  background: #f5f5f5;
+}
+
+.chat-sidebar {
+  width: 280px;
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Quota Info */
+.quota-info {
+  padding: 16px;
+  border-top: 1px solid #e0e0e0;
+  background: #fafafa;
+  margin: auto 0 0 0;
+}
+
+.quota-info h4 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.quota-text {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.quota-bar {
+  width: 100%;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.quota-fill {
+  height: 100%;
+  background: #4CAF50;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.quota-fill.warning {
+  background: #ff9800;
+}
+
+.quota-plan {
+  margin: 0;
+  font-size: 12px;
+  color: #999;
+}
+
+/* Settings Button */
+.btn-settings {
+  margin: 16px;
+  padding: 10px 16px;
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-settings:hover {
+  background: #e8e8e8;
+  border-color: #d0d0d0;
+}
+
+.btn-settings:active {
+  background: #e0e0e0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ai-chat-layout {
+    flex-direction: column;
+  }
+
+  .chat-sidebar {
+    width: 100%;
+    height: 200px;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .chat-main {
+    flex: 1;
+  }
+}
